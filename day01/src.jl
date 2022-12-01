@@ -27,8 +27,7 @@ function part_2()
             end
             cur_elf = 0
         else
-            cals = parse(Int, line)
-            cur_elf += cals
+            cur_elf += parse(Int, line)
         end
     end
 
