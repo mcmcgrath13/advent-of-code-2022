@@ -4,4 +4,5 @@ Solutions to advent of code puzzles - languages vary by day.
 
 * day01 - Julia
 * day02 - Zig
-* day 03 - TypeScript
+* day03 - TypeScript
+* day04 - Rust
