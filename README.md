@@ -6,3 +6,4 @@ Solutions to advent of code puzzles - languages vary by day.
 * day02 - Zig
 * day03 - TypeScript
 * day04 - Rust
+* day05 - Roc
