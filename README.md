@@ -10,6 +10,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day06 - Haskell
 * day07 - Ocaml ❌ -> Julia ✅ -> Ocaml ✅
 * day08 - Go
+* day09 - Pony
 
 
 Languages grab bag:
@@ -30,7 +31,6 @@ Languages grab bag:
 * Elm
 * Crystal
 * Python
-* Pony
 * Reason
 * Koka
 * Eiffel
