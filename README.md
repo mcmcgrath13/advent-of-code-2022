@@ -8,4 +8,5 @@ Solutions to advent of code puzzles - languages vary by day.
 * day04 - Rust
 * day05 - Roc
 * day06 - Haskell
-* day07 - Ocaml ❌ -> Julia -> Ocaml ✅
+* day07 - Ocaml ❌ -> Julia ✅ -> Ocaml ✅
+* day08 - Go

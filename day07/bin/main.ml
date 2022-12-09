@@ -9,7 +9,6 @@ let change_dir dirs loc =
   | _ ->
       let new_dir = { size = 0; children = [] } in
       let dir = List.hd dirs in
-      print_endline loc;
       dir.children <- List.cons new_dir dir.children;
       List.cons new_dir dirs
 
@@ -23,9 +22,6 @@ let parse_item dirs parts =
   | "dir" -> dirs
   | _ ->
       let dir = List.hd dirs in
-      print_newline ();
-      print_endline (List.nth parts 1);
-      print_endline first;
       dir.size <- dir.size + int_of_string first;
       dirs
 
@@ -69,7 +65,6 @@ let () =
   let lines = List.tl read_file in
   let tree = List.hd (List.rev (parse_dir_tree lines)) in
   let print_tree acc dir =
-    print_endline acc;
     String.cat acc (Printf.sprintf " %d" dir.size)
   in
   let total_disc = 70000000 in
