@@ -2,8 +2,10 @@ module Main where
 
 import Prelude (Unit, bind, (+), (<>), (==))
 import Data.Int (fromString, toStringAs, decimal, rem)
+import Data.Ord ((>=), (<))
 import Data.Maybe (Maybe(..))
 import Data.Foldable (foldl)
+import Data.HeytingAlgebra ((&&))
 import Data.Ring ((-))
 import Data.Semiring ((*))
 import Data.String.Pattern (Pattern(..))
@@ -14,10 +16,10 @@ import Node.Encoding (Encoding(..))
 import Effect (Effect)
 import Effect.Console (log)
 
-type State = { value :: Int, cycle  :: Int, res :: Int}
+type State = { value :: Int, cycle  :: Int, res :: String}
 
 formatState :: State -> String
-formatState state = (toStringAs decimal state.value) <> ", " <> (toStringAs decimal state.cycle) <> " = " <> (toStringAs decimal state.res)
+formatState state = (toStringAs decimal state.value) <> ", " <> (toStringAs decimal state.cycle) <> "\n" <> state.res
 
 parseInt :: String -> Int
 parseInt s = do
@@ -44,15 +46,32 @@ step f s line =
   in
     { value: state.value + (getValue line), cycle: state.cycle + 1, res: state.res}
 
-checkState :: State -> State
-checkState state = 
-    if (rem (state.cycle - 20) 40) == 0
-      then { cycle: state.cycle, value: state.value, res: state.res + state.cycle * state.value}
-      else state
+-- checkStatePart1 :: State -> State
+-- checkStatePart1 state = 
+--     if (rem (state.cycle - 20) 40) == 0
+--       then { cycle: state.cycle, value: state.value, res: state.res + state.cycle * state.value}
+--       else state
+
+checkStatePart2 :: State -> State
+checkStatePart2 state =
+  let
+    pixel = rem (state.cycle - 1) 40
+    spritePos = state.value - 1
+    canDraw = pixel >= spritePos && pixel < spritePos + 3
+    start = if pixel == 0
+      then "\n"
+      else ""
+    drawn = start <> if canDraw
+      then "#"
+      else "."
+  in
+    { cycle: state.cycle, value: state.value, res: state.res <> drawn }
+
+
 
 run :: String -> State
 run contents = do
-  foldl (step checkState) { value: 1, cycle: 1, res: 0 } (split (Pattern "\n") contents)
+  foldl (step checkStatePart2) { value: 1, cycle: 1, res: "" } (split (Pattern "\n") contents)
 
 main :: Effect Unit
 main = do

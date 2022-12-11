@@ -11,6 +11,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day07 - Ocaml ❌ -> Julia ✅ -> Ocaml ✅
 * day08 - Go
 * day09 - Pony
+* day10 - PureScript
 
 
 Languages grab bag:
@@ -27,7 +28,6 @@ Languages grab bag:
 * Raku
 * D
 * Erlang
-* PureScript
 * Elm
 * Crystal
 * Python
