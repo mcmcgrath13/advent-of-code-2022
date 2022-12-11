@@ -12,10 +12,11 @@ Solutions to advent of code puzzles - languages vary by day.
 * day08 - Go
 * day09 - Pony
 * day10 - PureScript
+* day11 - Dart
 
 
 Languages grab bag:
-* Dart
+* Dex
 * Nim
 * Ruby
 * Clojure
