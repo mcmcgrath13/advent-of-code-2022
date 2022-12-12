@@ -13,15 +13,16 @@ Solutions to advent of code puzzles - languages vary by day.
 * day09 - Pony
 * day10 - PureScript
 * day11 - Dart
+* day12 - Scala
 
 
 Languages grab bag:
 * Dex
+* Deno
 * Nim
 * Ruby
 * Clojure
 * Elixir
-* Scala
 * Swift
 * F#
 * Lua
