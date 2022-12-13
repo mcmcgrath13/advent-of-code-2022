@@ -85,7 +85,7 @@ void main(List<String> arguments) async {
   List<Monkey> monkeys =
       contents.split('\n\n').map(Monkey.parse).toList(growable: false);
   print(monkeys);
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 20; i++) {
     runRound(monkeys);
   }
   print(monkeys);

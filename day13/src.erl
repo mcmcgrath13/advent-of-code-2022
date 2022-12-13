@@ -1,7 +1,7 @@
 -module(src).
--export([run/1]).
+-export([part1/1, part2/1]).
 
-run(S) -> 
+part1(S) -> 
     Content = read_file_to_pairs(S),
     Matches = lists:map(fun(X) -> compare_pair(X) end, Content),
     Fun = fun({I, X}, Acc) -> Acc + if X -> I; true -> 0 end end,
@@ -9,11 +9,26 @@ run(S) ->
     io:format("Enumerated: ~w ~n", [Matches]),
     lists:foldl(Fun, 0, lists:enumerate(Matches)).
 
+part2(S) ->
+    Packets = read_file_to_packets(S),
+    Dividers = [[[2]], [[6]]],
+    WithDividers = lists:append(Packets, Dividers),
+    Sorted = lists:sort(fun(A, B) -> compare_pair(A, B) end, WithDividers),
+    DividerIndexes = lists:filter(fun({_, X}) -> lists:member(X, Dividers) end, lists:enumerate(Sorted)),
+    lists:foldl(fun({I, X}, Acc) -> Acc * I end, 1, DividerIndexes).
+
 read_file_to_pairs(S) ->
     {ok, File} = file:read_file(S),
     Content = unicode:characters_to_list(File),
     PairStrings = string:split(Content, "\n\n", all),
     lists:map(fun(X) -> string:split(X, "\n", all) end, PairStrings).
+
+read_file_to_packets(S) ->
+    {ok, File} = file:read_file(S),
+    Content = unicode:characters_to_list(File),
+    Lines = string:split(Content, "\n", all),
+    PacketLines = lists:filter(fun(X) -> X /= "" end, Lines),
+    lists:map(fun(X) -> parse_line(X) end, PacketLines).
 
 % thanks, stack overflow
 parse_line(S) -> 

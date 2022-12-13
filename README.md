@@ -14,6 +14,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day10 - PureScript
 * day11 - Dart
 * day12 - Scala
+* day13 - Erlang
 
 
 Languages grab bag:
@@ -29,7 +30,6 @@ Languages grab bag:
 * Common Lisp
 * Raku
 * D
-* Erlang
 * Elm
 * Crystal
 * Python
