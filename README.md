@@ -15,14 +15,15 @@ Solutions to advent of code puzzles - languages vary by day.
 * day11 - Dart
 * day12 - Scala
 * day13 - Erlang
+* day14 - Gleam
 
 
 Languages grab bag:
 * Dex
-* Deno
 * Nim
 * Ruby
 * Clojure
+* ClojureScript
 * Elixir
 * Swift
 * F#
@@ -45,7 +46,6 @@ Languages grab bag:
 * Unison
 * Rel
 * Datalog
-* Gleam
 * C/C++
 * Java
 * R
