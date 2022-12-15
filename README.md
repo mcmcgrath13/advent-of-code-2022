@@ -16,6 +16,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day12 - Scala
 * day13 - Erlang
 * day14 - Gleam
+* day15 - Elixir
 
 
 Languages grab bag:
@@ -24,7 +25,6 @@ Languages grab bag:
 * Ruby
 * Clojure
 * ClojureScript
-* Elixir
 * Swift
 * F#
 * Lua
