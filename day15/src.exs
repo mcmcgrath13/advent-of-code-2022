@@ -27,16 +27,13 @@ defmodule AOC do
   end
 
   def merge_ranges(ranges) do
-    Enum.sort(ranges, &((&1).first) <= (&2).first)
-      |> Enum.reduce([], fn r, acc ->
-        if Enum.count(acc) == 0 do
-          [r]
+    [head | sorted] = Enum.sort(ranges, &((&1).first) <= (&2).first)
+    Enum.reduce(sorted, [head], fn r, acc ->
+        [h | t] = acc
+        if Range.disjoint?(h, r) do
+          [r | acc]
         else
-          if Range.disjoint?(hd(acc), r) do
-            [r | acc]
-          else
-            [(min(r.first, hd(acc).first))..(max(r.last, hd(acc).last)) | tl(acc)]
-          end
+          [(h.first)..(max(r.last, h.last)) | t]
         end
       end)
   end
@@ -47,7 +44,7 @@ defmodule AOC do
   end
 
   def check_range(ranges, max_xy) do
-    0 in Enum.find(ranges, fn r -> max_xy in r end)
+    max_xy <= Enum.find(ranges, fn r -> 0 >= r.first end).last
   end
 
   def part_1(path, row_num) do
