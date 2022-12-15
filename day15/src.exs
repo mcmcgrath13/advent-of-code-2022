@@ -2,14 +2,14 @@ defmodule AOC do
 
   def read_file(path) do
     {:ok, contents} = File.read(path)
-    records = String.split(contents, "\n") |> Enum.map(&parse_line/1)
-    records
+    String.split(contents, "\n") |> Enum.map(&parse_line/1)
   end
 
   def parse_line(line) do
     parser = ~r/Sensor at x=(?<sx>[-]?\d+), y=(?<sy>[-]?\d+): closest beacon is at x=(?<bx>[-]?\d+), y=(?<by>[-]?\d+)/
-    matches = Regex.named_captures(parser, line) |> Enum.map(fn {k, v} -> {String.to_atom(k), String.to_integer(v)} end) |> Map.new()
-    matches
+    Regex.named_captures(parser, line)
+      |> Enum.map(fn {k, v} -> {String.to_atom(k), String.to_integer(v)} end)
+      |> Map.new()
   end
 
   def range_in_row(ranges, row_num, %{bx: bx, by: by, sx: sx, sy: sy}) do
@@ -42,12 +42,12 @@ defmodule AOC do
   end
 
   def ranges_for_rownum(records, row_num) do
-    Enum.reduce(records, [], fn r, s -> range_in_row(s, row_num, r) end) |> merge_ranges()
+    Enum.reduce(records, [], fn r, s -> range_in_row(s, row_num, r) end)
+      |> merge_ranges()
   end
 
   def check_range(ranges, max_xy) do
-    range = Enum.find(ranges, fn r -> max_xy in r end)
-    !(0 in range)
+    0 in Enum.find(ranges, fn r -> max_xy in r end)
   end
 
   def part_1(path, row_num) do
@@ -59,8 +59,8 @@ defmodule AOC do
         acc
       end
     end)
-    ranges = ranges_for_rownum(records, row_num)
-    range_widths = Enum.reduce(ranges, 0, fn r, acc -> acc + r.last - r.first + 1 end)
+    range_widths = ranges_for_rownum(records, row_num)
+      |> Enum.reduce(0, fn r, acc -> acc + r.last - r.first + 1 end)
     range_widths - Enum.count(beacons)
   end
 
@@ -68,11 +68,13 @@ defmodule AOC do
     multiplier = 4000000
 
     records = read_file(path)
-    ranges = 0..max_xy
-      |> Enum.map(fn row_num -> ranges_for_rownum(records, row_num) end)
+    [{y, ranges}] = 0..max_xy
+      |> Stream.map(fn row_num -> {row_num, ranges_for_rownum(records, row_num)}end)
+      |> Stream.drop_while(fn {_i, rs} -> check_range(rs, max_xy) end)
+      |> Stream.take(1)
+      |> Enum.to_list()
 
-    y = Enum.find_index(ranges, fn rs -> check_range(rs, max_xy) end)
-    range = Enum.at(ranges, y) |> Enum.find(fn r -> max_xy in r end)
+    range = Enum.find(ranges, fn r -> max_xy in r end)
     x = range.first - 1
 
     multiplier * x + y
