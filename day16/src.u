@@ -1,0 +1,108 @@
+use base
+use IO
+
+unique type Node
+    =  {
+        name: Text,
+        rate: Nat,
+        to: List Text
+    }
+
+emptyNode : Node
+emptyNode =
+    Node "" 0 []
+
+readNode : (Map Text Node) -> Text -> (Map Text Node)
+readNode map line =
+    p = Pattern.join [
+        (literal "Valve "), 
+        (capture (some letter)), 
+        (literal " has flow rate="), 
+        (capture (some patterns.digit)),
+        (Pattern.or (literal "; tunnel leads to valve ") (literal "; tunnels lead to valves ")),
+        (sepSome (literal ", ") (capture (some letter)))
+    ]
+    m = Pattern.run p line
+    (captures, rest) = Optional.getOrElse (["uh oh"], "") m
+    (header, tunnels) = splitAt 2 captures
+    name = (Optional.getOrElse "Uh Oh" (List.at 0 header))
+    rate = Optional.getOrElse 0 (Optional.map toNat (parse 10 (getOrElse "0" (List.at 1 header))))
+    put name ( Node name rate tunnels ) map
+
+readFile : Text -> {IO, Exception} Bytes
+readFile path =
+    fp = FilePath.FilePath path
+    bracket
+        '(open fp Read) (h -> Handle.close h) (h -> getBytes h (getSize fp))
+
+readNodes : Text -> (Map Text Node)
+readNodes path =
+    bytes = readFile path
+    contents = fromUtf8 bytes
+    lines = Text.split ?\n contents
+    List.foldLeft readNode Map.empty lines
+
+unique type State
+    = {
+        nodes: Map Text Node,
+        opened: List Text,
+        rate: Nat,
+        total: Nat
+    }
+
+search : (Map (Node, State) Nat) -> (Node, State) -> Nat -> (Nat, (Map (Node, State) Nat))
+search cache nodestate depth =
+    if Map.contains nodestate cache then
+        printLine "cache hit!"
+        ((Map.getOrElse 0 nodestate cache), cache)
+    else
+        (node, state) = nodestate
+        nodes = State.nodes state
+        opened = State.opened state
+        num_nodes = Map.size nodes
+        total = State.total state
+        rate = State.rate state
+        if (depth == 0) || (num_nodes == (List.size opened)) then
+            final_total = total + (rate * depth)
+            printLine ("done " ++ (Nat.toText final_total))
+            (final_total, cache)
+        else
+            new_state = State.total.set (total + rate) state
+            stay_here = stayAndOpen new_state node
+            to_search = stay_here ++ List.map (name -> ((Map.getOrElse emptyNode name nodes), new_state)) (Node.to node)
+            results = List.map (p -> search cache p (depth - 1)) to_search
+            totals = List.map at1 results
+            caches = List.map at2 results
+            merged_cache = List.foldLeft (Map.unionWith Universal.max) cache caches
+            maxres = Optional.getOrElse 0 (List.maximum totals)
+            updated_cache = put nodestate maxres merged_cache
+            (maxres, updated_cache)
+
+
+stayAndOpen : State -> Node -> [(Node, State)]
+stayAndOpen state node =
+    opened = State.opened state
+    name = Node.name node
+    printLine name
+    rate = State.rate state
+    if List.contains name  opened then
+        printLine "already open"
+        []
+    else
+        new_rate = rate + (Node.rate node)
+        printLine ("openening " ++ (toText new_rate))
+        s = State.rate.set new_rate state
+        [(node, State.opened.set ([name] ++ opened) s)]
+
+part1: Text -> Text -> Nat
+part1 path start =
+    nodes = readNodes "example.txt"
+    state = State nodes [] 0 0
+    start_node = Map.get start nodes
+    match start_node with
+        Some node -> at1 (search Map.empty (node, state) 30)
+        None -> 0
+
+part1Example : '{IO, Exception} ()
+part1Example _ =
+    printLine (Nat.toText (part1 "example.txt" "AA"))

@@ -1,0 +1,70 @@
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run part1Example
+run myMain asldfk
+run myMain
+run blah
+test
+!out
+find FilePath
+find.all List.reverse
+find List.reverse
+fork .base lib.base
+find lib.base.data.List.reverse
+ui
+view 4
+find : [a] -> [a]
+ls .base.data.List
+ls data.List
+ls base.data.List
+myTerm = List.map (x -> x * 10) [1,2,3,4,5,6]
+myTerm
+fork .base lib.base
+cd aoc
