@@ -17,6 +17,8 @@ Solutions to advent of code puzzles - languages vary by day.
 * day13 - Erlang
 * day14 - Gleam
 * day15 - Elixir
+* day16 - Unison ❌ -> Julia ✅
+* day17 - Julia
 
 
 Languages grab bag:
