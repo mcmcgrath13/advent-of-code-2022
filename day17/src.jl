@@ -73,21 +73,14 @@ next_ind(cur_i, size) = cur_i == size ? 1 : cur_i + 1
 
 function run_rock!(column::Column, directions::Vector{Direction}, direction_index::Int, shape::BitMatrix)
     rock = Rock(shape, (column.height - column.floor_height) + 3)
-    # println(rock)
     make_column_taller!(column, rock)
     i = direction_index
     direction = directions[i]
     num_dirs = length(directions)
-    # print_state(rock, column)
     while step!(direction, rock, column)
-        # println(direction)
-        # print_state(rock, column)
         i = next_ind(i, num_dirs)
         direction = directions[i]
     end
-
-    # println(direction)
-    # print_state(rock, column)
 
     return next_ind(i, num_dirs)
 end
@@ -130,7 +123,6 @@ function update_column!(column::Column, rock::Rock)
     # check if there's a new functional floor
     for i in (rock.bottom_offset):(column.height - column.floor_height)
         if all(column.bit_mask[i, :])
-            # println("new floor at $i")
             column.bit_mask = column.bit_mask[i:end, :]
             column.floor_height = column.floor_height + i - 1
             break
@@ -139,8 +131,8 @@ function update_column!(column::Column, rock::Rock)
 end
 
 function make_column_taller!(column::Column, rock::Rock)
-    num_new_rows = ((column.height - column.floor_height) + 1 + 3 + rock.height) - size(column.bit_mask)[1]
-    if num_new_rows > 0
+    if (column.height - column.floor_height) + 10 > size(column.bit_mask)[1]
+        num_new_rows = 100
         new_rows = repeat(EMPTY_ROW, num_new_rows)
         column.bit_mask = vcat(column.bit_mask, new_rows)
     end
@@ -174,6 +166,52 @@ function part_1(path, num_rocks)
         dir_idx = run_rock!(column, directions, dir_idx, rock_shape)
         rock_idx = next_ind(rock_idx, n)
     end
-    # show(stdout, "text/plain", column.bit_mask)
+    return column.height
+end
+
+function part_2(path, num_rocks)
+    directions = read_file(path)
+    column = Column()
+    rock_idx = 1
+    dir_idx = 1
+    n = length(ROCKS)
+    cache = Dict{Tuple{BitMatrix, Int, Int}, Column}()
+    first_cache_key = nothing
+    first_floor = nothing
+    first_height = nothing
+    first_i = 0
+
+    sped_run = false
+
+    i = 1
+    while i <= num_rocks
+        rock_shape = ROCKS[rock_idx]
+        cache_key = (column.bit_mask, dir_idx, rock_idx)
+
+        if !sped_run && first_cache_key == cache_key
+            # speed run!
+            num_steps = i - first_i
+            height_diff = column.height - first_height
+            floor_diff = column.floor_height - first_floor
+            rounds = (num_rocks - i) ÷ num_steps
+            column.height = column.height + (height_diff * rounds)
+            column.floor_height = column.floor_height + (floor_diff * rounds)
+            i  = i + (num_steps * rounds)
+            sped_run = true
+        end
+        
+        if isnothing(first_cache_key) && haskey(cache, cache_key)
+            first_cache_key = cache_key
+            first_height = column.height
+            first_floor = column.floor_height
+            first_i = i
+        end
+
+        dir_idx = run_rock!(column, directions, dir_idx, rock_shape)
+        cache[cache_key] = deepcopy(column)
+
+        rock_idx = next_ind(rock_idx, n)
+        i += 1
+    end
     return column.height
 end
