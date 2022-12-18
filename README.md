@@ -19,11 +19,11 @@ Solutions to advent of code puzzles - languages vary by day.
 * day15 - Elixir
 * day16 - Unison ❌ -> Julia ✅
 * day17 - Julia
+* day18 - Nim
 
 
 Languages grab bag:
 * Dex
-* Nim
 * Ruby
 * Clojure
 * ClojureScript
