@@ -26,7 +26,6 @@ Languages grab bag:
 * Dex
 * Ruby
 * Clojure
-* ClojureScript
 * Swift
 * F#
 * Lua
