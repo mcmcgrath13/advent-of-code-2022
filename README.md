@@ -20,13 +20,13 @@ Solutions to advent of code puzzles - languages vary by day.
 * day16 - Unison ❌ -> Julia ✅
 * day17 - Julia
 * day18 - Nim
+* day19 - Swift
 
 
 Languages grab bag:
 * Dex
 * Ruby
 * Clojure
-* Swift
 * F#
 * Lua
 * Common Lisp
