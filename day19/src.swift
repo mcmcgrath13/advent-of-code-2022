@@ -131,16 +131,11 @@ extension State: Hashable {
 }
 
 
-func run(blueprint: Blueprint, steps: UInt8) -> ([UInt8: UInt8], UInt8) {
+func run(blueprint: Blueprint, steps: UInt8) -> UInt8 {
     var cache: [State: UInt8] = [:]
-    var stepMaxes: [UInt8: UInt8] = [:]
-    return (stepMaxes, run(cache: &cache, targets: &stepMaxes, blueprint: blueprint, state: State(), numSteps: steps))
+    return run(cache: &cache, blueprint: blueprint, state: State(), numSteps: steps)
 }
-func run(blueprint: Blueprint, steps: UInt8, targets: inout [UInt8:UInt8]) -> ([UInt8: UInt8], UInt8) {
-    var cache: [State: UInt8] = [:]
-    return (targets, run(cache: &cache, targets: &targets, blueprint: blueprint, state: State(), numSteps: steps))
-}
-func run(cache: inout [State: UInt8], targets: inout [UInt8: UInt8], blueprint: Blueprint, state: State, numSteps: UInt8) -> UInt8 {
+func run(cache: inout [State: UInt8], blueprint: Blueprint, state: State, numSteps: UInt8) -> UInt8 {
     var thisState = state
     // decide to build
     if thisState.steps == numSteps { 
@@ -149,11 +144,6 @@ func run(cache: inout [State: UInt8], targets: inout [UInt8: UInt8], blueprint: 
 
     if let result = cache[state] {
         return result
-    }
-
-    // prune (more agressively as we get closer to the end)
-    if let target = targets[state.steps] {
-        if state.geode + min(5, (numSteps - state.steps)) < target { return 0 }
     }
     
     let canBuild = blueprint.robots.filter({ (key: String, value: Store) -> Bool in return state.wallet.canAfford(cost: value) })
@@ -168,7 +158,7 @@ func run(cache: inout [State: UInt8], targets: inout [UInt8: UInt8], blueprint: 
         var nextState = thisState // should copy
         nextState.geode += 1
         nextState.wallet.buy(cost: cost)
-        result = run(cache: &cache, targets: &targets, blueprint: blueprint, state: nextState, numSteps: numSteps)
+        result = run(cache: &cache, blueprint: blueprint, state: nextState, numSteps: numSteps)
     } else {
         var nextStates: [State] = []
         for (robot, cost) in canBuild {
@@ -184,18 +174,11 @@ func run(cache: inout [State: UInt8], targets: inout [UInt8: UInt8], blueprint: 
         // if we can build 3 + things, we should probably do that and not keep hoarding
         if canBuild.count < 3 { nextStates.append(thisState) }
 
-        result = nextStates.map({ (s: State) -> UInt8 in run(cache: &cache, targets: &targets, blueprint: blueprint, state: s, numSteps: numSteps)}).max()!
+        result = nextStates.map({ (s: State) -> UInt8 in run(cache: &cache, blueprint: blueprint, state: s, numSteps: numSteps)}).max()!
     }
     result += state.geode
 
     cache[state] = result
-    if let target = targets[state.steps] {
-        if state.geode > target {
-            targets[state.steps] = state.geode
-        }
-    } else {
-        targets[state.steps] = state.geode
-    }
     return result
 }
 
@@ -242,28 +225,22 @@ Blueprint 29: Each ore robot costs 4 ore. Each clay robot costs 4 ore. Each obsi
 Blueprint 30: Each ore robot costs 4 ore. Each clay robot costs 4 ore. Each obsidian robot costs 4 ore and 9 clay. Each geode robot costs 4 ore and 16 obsidian.
 """
 
-func part1(contents: String) throws -> [[UInt8: UInt8]] {
+func part1(contents: String) throws {
     let blueprints = try parseFile(contents: contents)
     var quality = 0
-    var targets: [[UInt8: UInt8]] = []
     for blueprint in blueprints {
-        let (thisTargets, res) = run(blueprint: blueprint, steps: 24)
+        let res = run(blueprint: blueprint, steps: 24)
         quality += Int(blueprint.id) * Int(res)
-        targets.append(thisTargets)
     }
     print(quality)
-    return targets
 }
 
 func part2(contents: String) throws {
     let blueprints = try parseFile(contents: contents)
     var quality = 1
     for (index, blueprint) in blueprints.enumerated() {
-        var targets: [UInt8:UInt8] = [:]
-        var _ = run(blueprint: blueprint, steps: 20, targets: &targets)
         if index == 3 { break }
-        let (_, smallRes) = run(blueprint: blueprint, steps: 32, targets: &targets)
-        let res = Int(smallRes)
+        let res = Int(run(blueprint: blueprint, steps: 32))
         print(res)
         quality *= res
     }
@@ -271,7 +248,7 @@ func part2(contents: String) throws {
 }
 
 do {
-    let _ = try part1(contents: example)
+    try part1(contents: example)
     try part2(contents: input)
 } catch {
     print("Unexpected error: \(error).")
