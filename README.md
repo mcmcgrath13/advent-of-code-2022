@@ -21,6 +21,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day17 - Julia
 * day18 - Nim
 * day19 - Swift
+* day20 - Crystal
 
 
 Languages grab bag:
@@ -33,7 +34,6 @@ Languages grab bag:
 * Raku
 * D
 * Elm
-* Crystal
 * Python
 * Reason
 * Koka
