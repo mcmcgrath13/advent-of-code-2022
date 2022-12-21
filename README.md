@@ -22,11 +22,11 @@ Solutions to advent of code puzzles - languages vary by day.
 * day18 - Nim
 * day19 - Swift
 * day20 - Crystal
+* day21 - Ruby
 
 
 Languages grab bag:
 * Dex
-* Ruby
 * Clojure
 * F#
 * Lua
