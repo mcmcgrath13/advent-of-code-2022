@@ -7,9 +7,8 @@ mutable struct Tile
     row::Int
     type::TileType
     face::Symbol
-    x::Int
-    y::Int
-    z::Int
+    normalized_col::Int
+    normalized_row::Int
 
     # neighbors
     up::Tile
@@ -17,15 +16,15 @@ mutable struct Tile
     down::Tile
     left::Tile
 
-    function Tile(column, row, type, x, y, z)
-        new(column, row, type, x, y, z)
+    function Tile(column, row, type, face, normalized_col, normalized_row)
+        new(column, row, type, face, normalized_col, normalized_row)
     end
 end
 
-function parse_file(path, face_size, face_map; fold_cube = false)
+function parse_file(path, face_size, face_map, transition_map; fold_cube = false)
     contents = read(path, String)
     sections = split(contents, "\n\n")
-    map = parse_map(sections[1], fold_cube, face_size, face_map)
+    map = parse_map(sections[1], fold_cube, face_size, face_map, transition_map)
     path = parse_path(sections[2])
     
     return map, path
@@ -34,9 +33,9 @@ end
 const FACES = (:top, :front, :back, :left, :right, :bottom)
 
 
-function parse_map(content, fold_cube, face_size, face_map)
+function parse_map(content, fold_cube, face_size, face_map, transition_map)
     tiles = Dict{Tuple{Int, Int}, Tile}()
-    tiles_cube = Dict{Tuple{Int, Int, Int}, Tile}()
+    tiles_cube = Dict(face => Dict{Tuple{Int, Int}, Tile}() for face in FACES)
     lines = split(content, '\n')
     start = nothing
 
@@ -49,16 +48,16 @@ function parse_map(content, fold_cube, face_size, face_map)
 
             normalized_col = (col % face_size) + 1
             normalized_row = (row % face_size) + 1
-            face, (x, y, x) = face_map[(col ÷ face_size, row ÷ face_size)](normalized_col, normalized_row, face_size)
+            face = face_map[((col - 1) ÷ face_size, (row - 1) ÷ face_size)]
 
             tile = if char == '.'
-                Tile(col, row, Open(), face, x, y, z)
+                Tile(col, row, Open(), face, normalized_col, normalized_row)
             elseif char == '#'
-                Tile(col, row, Wall(), face, x, y, z)
+                Tile(col, row, Wall(), face, normalized_col, normalized_row)
             end
 
             tiles[(col, row)] = tile
-            tiles_cube[(x, y, z)] = tile
+            tiles_cube[face][(normalized_col, normalized_row)] = tile
 
             if start == nothing
                 start = tile
@@ -68,11 +67,13 @@ function parse_map(content, fold_cube, face_size, face_map)
 
     # build up the edges
     if fold_cube
-        for (coord, tile) in tiles_cube
-            tile.right = get_next_cube(tiles, coord, :right)
-            tile.left = get_next_cube(tiles, coord, :left)
-            tile.up = get_next_cube(tiles, coord, :up)
-            tile.down = get_next_cube(tiles, coord, :down)
+        for (face, face_tiles) in tile_cube
+            for (coord, tile) in face_tiles
+                tile.right = get_next_cube(face_tiles, coord, :right, transition_map, tile_cube, face_size)
+                tile.left = get_next_cube(face_tiles, coord, :left, transition_map, tile_cube, face_size)
+                tile.up = get_next_cube(face_tiles, coord, :up, transition_map, tile_cube, face_size)
+                tile.down = get_next_cube(face_tiles, coord, :down, transition_map, tile_cube, face_size)
+            end
         end
     else
         for (coord, tile) in tiles
@@ -99,22 +100,15 @@ function get_next(tiles, coord, direction)
     end
 end
 
-const FACE_TRANSITIONS = (
-    top = (left = (-1, 0, 0), up = (0, 0, 1), right = (1, 0, 0), down = (0, 0, -1))
-    front = (left = (-1, 0, 0), up = (0, 1, 0), right = (1, 0, 0), down = (0, -1, 0))
-    bottom = (left = (1, 0, 0), up = (0, 0, -1), right = (-1, 0, 0), down = (0, 0, 1))
-    back = (left = (1, 0, 0), up = (0, -1, 0), right = (-1, 0, 0), down = (0, 1, 0))
-    left = (left = (0, 0, 1), up = (0, 1, 0), right = (0, 0, -1), down = (0, -1, 0))
-    right = (left = (0, 0, -1), up = (0, 1, 0), right = (0, 0, 1), down = (0, -1, 0))
-)
-
-function get_next_cube(tiles, coord, direction, cube_map)
+function get_next_cube(tiles, coord, direction, transition_map, tile_cube, face_size)
     cur_tile = tiles[coord]
-    diff = FACE_TRANSITIONS[cur_tile.face][direction]
+    diff = DIRECTIONS[direction]
 
     get(tiles, coord .+ diff) do
-        
-        
+        col, row = coord
+        next_face, map_fn = transition_map(cur_tile.face, direction)
+        next_tiles = tile_cube[next_face]
+        next_tiles[map_fn(col, row, face_size)]
     end
 end
 
@@ -170,60 +164,57 @@ end
 
 const HEADING = (right = 0, down = 1, left = 2, up = 3)
 
-function part_1(path, face_size, face_map)
-    start_tile, path = parse_file(path, face_size, face_map)
+function part_1(path, face_size, face_map, transition_map)
+    start_tile, path = parse_file(path, face_size, face_map, transition_map)
     end_tile, direction = walk_path(start_tile, :right ,path)
     println(1000 * end_tile.row + 4 * end_tile.column + HEADING[direction])
 end
 
-function part_2(path, face_size, face_map)
-    start_tile, path = parse_file(path, face_size, face_map, fold_cube = true)
+function part_2(path, face_size, face_map, transition_map)
+    start_tile, path = parse_file(path, face_size, face_map, transition_map; fold_cube = true)
     return path
 end
 
 # cube space goes from 1 -> face_size in all directions, column/row already normalized
-# top x = 1 -> face size, y = face_size, z = 1 -> face_size
 
 function example_top(column, row, face_size)
-    column, face_size, face_size - row
+    (left = (:left, (row, face_size)), up = (:back, (1, row)), right = (:right, (face_size , face_size - row)), down = (:front, (column, 1)))
 end
 
 function example_front(column, row, face_size)
-    column, row, 1
+    (left = (:left, (face_size, row)), up = (:top, (column, face_size)), right = (:right, (face_size - row, face_size)), down = (:bottom, (column, 1)))
 end
 
 function example_bottom(column, row, face_size)
-    face_size - column, 1, row
+    (left = (:left, (face_size - row, face_size)), up = (:front, (column, face_size)), right = (:right, (1, row)), down = (:back, (face_size - column, face_size)))
 end
 
 function example_left(column, row, face_size)
-    1, row, face_size - column 
+    (left = (:back, (face_size, row)), up = (:top, (1, column)), right = (:front, (1, row)), down = (:bottom, (1, face_size - column)))
 end
 
 function example_back(column, row, face_size)
-    face_size - column, face_size - row, face_size
+    (left = (:right, (face_size - column, face_size)), up = (:top, (face_size - column, 1)), right = (:left, (1, row)), down = (:bottom, (face_size - column , face_size)))
 end
 
 function example_right(column, row, face_size)
-    face_size, face_size - column, row
+    (left = (:bottom, (face_size, row)), up = (:front, (face_size, face_size - column)), right = (:top, (face_size, face_size - row)), down = (:back, (1, face_size - column)))
 end
 
 const EXAMPLE_CUBE_MAP = Dict(
-    (3,1) => (:top, example_top), 
-    (1,2) => (:back, example_back), 
-    (2,2) => (:left, example_left), 
-    (2,3) => (:front, example_front), 
-    (3,3) => (:bottom, example_bottom), 
-    (3,4) => (:right, example_right)
+    (2,0) => :top, 
+    (0,1) => :back, 
+    (1,1) => :left, 
+    (2,1) => :front, 
+    (2,2) => :bottom, 
+    (3,2) => :right
     )
 
-function fold_back(coord)
-    [1 0 0;
-    0 0 -1;
-    0 1 0] * coord
-end
-
-const R_LEFT = [0 -1; 1 0]
-const R_RIGHT = [0 1; -1 0]
-const R_SPIN = [-1 0; 0; -1]
-const R_NOOP = [1 1; 1 1]
+const EXAMPLE_TRANSITION_MAP = (
+    top = example_top,
+    back = example_back,
+    left = example_left,
+    front = example_front,
+    bottom = example_bottom,
+    right = example_right,
+)
