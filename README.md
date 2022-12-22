@@ -23,6 +23,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day19 - Swift
 * day20 - Crystal
 * day21 - Ruby
+* day22 - Julia
 
 
 Languages grab bag:

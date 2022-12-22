@@ -138,7 +138,6 @@ function get_next_cube(tiles, coord, direction, transition_map, tile_cube, face_
         map_fn = transition_map[cur_tile.face]
         next_face, next_coord = map_fn(col, row, face_size)[direction]
         next_tiles = tile_cube[next_face]
-        println(cur_tile.face, " ", coord, " ", direction, " ", next_face, " ", next_coord)
         next_tiles[next_coord]
     end
 end
@@ -222,8 +221,7 @@ function part_2(path, face_size, face_map, transition_map, pivots)
     println(1000 * end_tile.row + 4 * end_tile.column + HEADING[direction])
 end
 
-# cube space goes from 1 -> face_size in all directions, column/row already normalized
-# return dir -> next face, which cube tuples
+# we crossed faces, which way are we going now?
 const EXAMPLE_PIVOTS = (
     top = (left = :down, up = :down, right = :left, down = :down),
     front = (left = :left, up = :up, right = :down, down = :down),
@@ -233,6 +231,8 @@ const EXAMPLE_PIVOTS = (
     right = (left = :left, up = :left, right = :left, down = :right),
 )
 
+# cube space goes from 1 -> face_size in all directions, column/row already normalized
+# return dir -> next face, which cube tuples
 function example_top(column, row, face_size)
     (
         left = (:left, (row, face_size)),
@@ -287,6 +287,7 @@ function example_right(column, row, face_size)
     )
 end
 
+# which face are we on?
 const EXAMPLE_CUBE_MAP = Dict(
     (2, 0) => :top,
     (0, 1) => :back,
@@ -296,6 +297,7 @@ const EXAMPLE_CUBE_MAP = Dict(
     (3, 2) => :right,
 )
 
+# faces to functions on how to transition
 const EXAMPLE_TRANSITION_MAP = (
     top = example_top,
     back = example_back,
@@ -303,4 +305,85 @@ const EXAMPLE_TRANSITION_MAP = (
     front = example_front,
     bottom = example_bottom,
     right = example_right,
+)
+
+const INPUT_PIVOTS = (
+    top = (left = :right, up = :right, right = :right, down = :down),
+    front = (left = :down, up = :up, right = :up, down = :down),
+    bottom = (left = :left, up = :up, right = :left, down = :left),
+    back = (left = :down, up = :up, right = :up, down = :down),
+    left = (left = :right, up = :right, right = :right, down = :down),
+    right = (left = :left, up = :up, right = :left, down = :left),
+)
+
+function input_top(column, row, face_size)
+    (
+        left = (:left, (1, face_size - row + 1)),
+        up = (:back, (1, column)),
+        right = (:right, (1, row)),
+        down = (:front, (column, 1)),
+    )
+end
+
+function input_front(column, row, face_size)
+    (
+        left = (:left, (row, 1)),
+        up = (:top, (column, face_size)),
+        right = (:right, (row, face_size)),
+        down = (:bottom, (column, 1)),
+    )
+end
+
+function input_bottom(column, row, face_size)
+    (
+        left = (:left, (face_size, row)),
+        up = (:front, (column, face_size)),
+        right = (:right, (face_size, face_size - row + 1)),
+        down = (:back, (face_size, column)),
+    )
+end
+
+function input_left(column, row, face_size)
+    (
+        left = (:top, (1, face_size - row + 1)),
+        up = (:front, (1, column)),
+        right = (:bottom, (1, row)),
+        down = (:back, (column, 1)),
+    )
+end
+
+function input_back(column, row, face_size)
+    (
+        left = (:top, (row, 1)),
+        up = (:left, (column, face_size)),
+        right = (:bottom, (row, face_size)),
+        down = (:right, (column, 1)),
+    )
+end
+
+function input_right(column, row, face_size)
+    (
+        left = (:top, (face_size, row)),
+        up = (:back, (column, face_size)),
+        right = (:bottom, (face_size, face_size - row + 1)),
+        down = (:front, (face_size, column)),
+    )
+end
+
+const INPUT_CUBE_MAP = Dict(
+    (1, 0) => :top,
+    (2, 0) => :right,
+    (1, 1) => :front,
+    (0, 2) => :left,
+    (1, 2) => :bottom,
+    (0, 3) => :back,
+)
+
+const INPUT_TRANSITION_MAP = (
+    top = input_top,
+    back = input_back,
+    left = input_left,
+    front = input_front,
+    bottom = input_bottom,
+    right = input_right,
 )
