@@ -24,6 +24,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day20 - Crystal
 * day21 - Ruby
 * day22 - Julia
+* day23 - Odin
 
 
 Languages grab bag:
@@ -41,7 +42,6 @@ Languages grab bag:
 * Eiffel
 * Forth
 * APL
-* Odin
 * BQN
 * Ada
 * Algol
