@@ -25,6 +25,7 @@ Solutions to advent of code puzzles - languages vary by day.
 * day21 - Ruby
 * day22 - Julia
 * day23 - Odin
+* day24 - Julia
 
 
 Languages grab bag:

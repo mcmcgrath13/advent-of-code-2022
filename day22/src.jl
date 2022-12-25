@@ -162,17 +162,33 @@ end
 function walk_path(tile, direction, commands; cube = false, pivots = nothing)
     next_tile = tile
     next_direction = direction
-    for command in commands
-        println("command: ", command)
+    for (i, command) in enumerate(commands)
+        # println("command: ", command)
         next_tile, next_direction = move(next_tile, next_direction, command, cube, pivots)
-        println(
+        # println(
+        #     "now at: ",
+        #     next_tile.column,
+        #     ", ",
+        #     next_tile.row,
+        #     " facing ",
+        #     next_direction,
+        #     " i ",
+        #     i
+        # )
+        if (i % 100 == 0) || (i % 100 == 1)
+            println("command: ", command)
+            println(
             "now at: ",
             next_tile.column,
             ", ",
             next_tile.row,
             " facing ",
             next_direction,
+            " i ",
+            i
         )
+            # break
+        end
     end
     return (next_tile, next_direction)
 end
@@ -183,8 +199,10 @@ const ROTATE_RIGHT = (up = :right, right = :down, down = :left, left = :up)
 function move(tile, direction, rotate::Char, cube, pivots)
     new_direction = if rotate == 'L'
         ROTATE_LEFT[direction]
-    else
+    elseif rotate == 'R'
         ROTATE_RIGHT[direction]
+    else # account for empty space at the end
+        direction
     end
     return tile, new_direction
 end
