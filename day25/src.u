@@ -1,0 +1,66 @@
+use base
+use IO
+
+parseDigit: Char -> Int
+parseDigit c =
+    match c with
+        ?2 -> +2
+        ?1 -> +1
+        ?0 -> +0
+        ?- -> -1
+        ?= -> -2
+        _ -> +10
+        
+toSnafu : Int -> Text
+toSnafu n =
+  go n acc =
+    val = n Int.+ +2
+    quot = val Int./ +5
+    rem = Int.mod val +5
+    d = match rem with
+        +4 -> "2"
+        +3 -> "1"
+        +2 -> "0"
+        +1 -> "-"
+        +0 -> "="
+        _ -> "?"
+    if quot Int.> +0 then go quot (d ++ acc) else (d ++ acc)
+  go n ""
+    
+calcDigit: (Int, Nat) -> Int
+calcDigit p =
+    (val, ind) = p
+    val Int.* (Int.pow +5 ind)
+
+calcSnafu: Text -> Int
+calcSnafu item =
+    digits = item |> Text.reverse |> Text.toCharList |> List.map parseDigit |> indexed
+    List.foldLeft (acc p -> acc Int.+ (calcDigit p)) +0 digits
+
+readFile : Text -> {IO, Exception} Bytes
+readFile path =
+    fp = FilePath.FilePath path
+    bracket
+        '(open fp Read) (h -> Handle.close h) (h -> getBytes h (getSize fp))
+
+readEntries : Text -> (List Int)
+readEntries path =
+    bytes = readFile path
+    contents = fromUtf8 bytes
+    lines = Text.split ?\n contents
+    List.map calcSnafu lines
+    
+part1: Text -> Text
+part1 path =
+    vals = readEntries path
+    sum = List.foldLeft (Int.+) +0 vals
+    toSnafu sum
+
+part1Example : '{IO, Exception} ()
+part1Example _ =
+    printLine (part1 "example.txt")
+
+part1Input : '{IO, Exception} ()
+part1Input _ =
+    printLine (part1 "input.txt")
+    
